@@ -5,6 +5,10 @@
       <input v-model="form.name" placeholder="菜名" />
       <input v-model.number="form.durationMin" type="number" min="1" placeholder="时长(分钟)" />
       <input v-model.number="form.difficulty" type="number" min="1" max="5" placeholder="难度(1-5)" />
+      <select v-model.number="form.status">
+        <option :value="1">上架</option>
+        <option :value="0">下架</option>
+      </select>
       <input v-model="form.remark" placeholder="备注" />
       <button type="submit">新增菜品</button>
     </form>
@@ -41,6 +45,7 @@ const form = reactive({
   name: '',
   durationMin: 10,
   difficulty: 2,
+  status: 1,
   remark: '',
 })
 
