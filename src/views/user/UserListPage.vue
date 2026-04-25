@@ -31,24 +31,30 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="240">
-          <template #default>
+          <template #default="{ row }">
             <el-space>
-              <el-button link type="primary">编辑</el-button>
-              <el-button link type="warning">禁用</el-button>
-              <el-button link>重置密码</el-button>
+              <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+              <el-button link type="warning" @click="toggleStatus(row)">
+                {{ row.status === 1 ? '禁用' : '启用' }}
+              </el-button>
+              <el-button link @click="resetPassword(row)">重置密码</el-button>
             </el-space>
           </template>
         </el-table-column>
       </el-table>
     </section>
 
-    <el-dialog v-model="showDialog" title="新增账号" width="520px">
+    <el-dialog v-model="showDialog" :title="editingUserId ? '编辑账号' : '新增账号'" width="520px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
-        <el-form-item label="账号" prop="username"><el-input v-model="form.username" /></el-form-item>
+        <el-form-item label="账号" prop="username">
+          <el-input v-model="form.username" :disabled="Boolean(editingUserId)" />
+        </el-form-item>
         <el-form-item label="昵称"><el-input v-model="form.nickname" /></el-form-item>
         <el-form-item label="手机号" prop="phone"><el-input v-model="form.phone" /></el-form-item>
         <el-form-item label="邮箱" prop="email"><el-input v-model="form.email" /></el-form-item>
-        <el-form-item label="密码" prop="password"><el-input v-model="form.password" show-password /></el-form-item>
+        <el-form-item v-if="!editingUserId" label="密码" prop="password">
+          <el-input v-model="form.password" show-password />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showDialog = false">取消</el-button>
@@ -62,12 +68,19 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { createAdminUser, listAdminUsers, type AdminUser } from '../../api/admin-user'
+import {
+  createAdminUser,
+  listAdminUsers,
+  resetAdminUserPassword,
+  updateAdminUser,
+  type AdminUser,
+} from '../../api/admin-user'
 
 const rows = ref<AdminUser[]>([])
 const loading = ref(false)
 const submitLoading = ref(false)
 const showDialog = ref(false)
+const editingUserId = ref<number | null>(null)
 const form = ref({
   username: '',
   nickname: '',
@@ -85,6 +98,7 @@ const rules: FormRules<typeof form.value> = {
 }
 
 function openCreate() {
+  editingUserId.value = null
   form.value = {
     username: '',
     nickname: '',
@@ -92,6 +106,20 @@ function openCreate() {
     email: '',
     password: '',
     roleIds: [1],
+  }
+  formRef.value?.clearValidate()
+  showDialog.value = true
+}
+
+function openEdit(row: AdminUser) {
+  editingUserId.value = row.id
+  form.value = {
+    username: row.username,
+    nickname: row.nickname ?? '',
+    phone: row.phone ?? '',
+    email: row.email ?? '',
+    password: '',
+    roleIds: row.roleIds?.length ? row.roleIds : [1],
   }
   formRef.value?.clearValidate()
   showDialog.value = true
@@ -115,14 +143,49 @@ async function submitCreate() {
   }
   submitLoading.value = true
   try {
-    await createAdminUser(form.value)
-    ElMessage.success('新增账号成功')
+    if (editingUserId.value) {
+      await updateAdminUser(editingUserId.value, {
+        nickname: form.value.nickname,
+        phone: form.value.phone,
+        email: form.value.email,
+        roleIds: form.value.roleIds.map((id) => Number(id)),
+      })
+      ElMessage.success('编辑账号成功')
+    } else {
+      await createAdminUser(form.value)
+      ElMessage.success('新增账号成功')
+    }
     showDialog.value = false
     await loadUsers()
   } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '新增账号失败')
+    ElMessage.error(error instanceof Error ? error.message : '保存账号失败')
   } finally {
     submitLoading.value = false
+  }
+}
+
+async function toggleStatus(row: AdminUser) {
+  try {
+    await updateAdminUser(row.id, {
+      nickname: row.nickname ?? '',
+      phone: row.phone ?? '',
+      email: row.email ?? '',
+      status: row.status === 1 ? 0 : 1,
+      roleIds: row.roleIds?.length ? row.roleIds.map((id) => Number(id)) : [1],
+    })
+    ElMessage.success(row.status === 1 ? '账号已禁用' : '账号已启用')
+    await loadUsers()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '更新账号状态失败')
+  }
+}
+
+async function resetPassword(row: AdminUser) {
+  try {
+    await resetAdminUserPassword(row.id)
+    ElMessage.success(`已将 ${row.username} 的密码重置为 123456`)
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '重置密码失败')
   }
 }
 

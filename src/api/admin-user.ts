@@ -13,6 +13,7 @@ export interface AdminUser {
   phone?: string
   email?: string
   status: number
+  roleIds?: number[]
 }
 
 export interface AdminUserCreateReq {
@@ -32,5 +33,21 @@ export async function listAdminUsers(): Promise<AdminUser[]> {
 export async function createAdminUser(req: AdminUserCreateReq): Promise<number> {
   const { data } = await http.post<ApiResponse<{ id: number }>>('/api/admin/users', req)
   return data.data.id
+}
+
+export interface AdminUserUpdateReq {
+  nickname?: string
+  phone?: string
+  email?: string
+  status?: number
+  roleIds: number[]
+}
+
+export async function updateAdminUser(id: number, req: AdminUserUpdateReq): Promise<void> {
+  await http.put(`/api/admin/users/${id}`, req)
+}
+
+export async function resetAdminUserPassword(id: number): Promise<void> {
+  await http.post(`/api/admin/users/${id}/reset-password`)
 }
 
