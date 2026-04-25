@@ -25,6 +25,8 @@ describe('user list page', () => {
           'el-space': true,
           'el-page-header': true,
           'el-button': true,
+          'el-select': true,
+          'el-option': true,
           'el-table': true,
           'el-table-column': true,
           'el-tag': true,

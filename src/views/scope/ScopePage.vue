@@ -1,20 +1,28 @@
 <template>
-  <div v-loading="loading">
-    <el-space direction="vertical" fill style="width: 100%">
-      <el-page-header content="端范围配置" />
-      <el-form inline>
+  <div class="warm-page" v-loading="loading">
+    <section class="warm-header">
+      <h2>端权限范围</h2>
+      <p class="warm-subtitle">配置角色可访问端：管理后台 / 小程序</p>
+    </section>
+    <section class="warm-header">
+      <el-form inline class="warm-filter">
         <el-form-item label="角色">
           <el-select v-model="roleId" style="width: 220px" placeholder="请选择角色" @change="loadScopes">
             <el-option v-for="role in roles" :key="role.id" :label="role.name" :value="role.id" />
           </el-select>
         </el-form-item>
       </el-form>
+    </section>
+    <section class="warm-header">
+      <p class="warm-subtitle" style="margin-bottom: 8px">角色访问范围开关（保存后立即生效）</p>
       <el-checkbox-group v-model="scopes">
         <el-checkbox value="admin">管理后台</el-checkbox>
         <el-checkbox value="mini">小程序</el-checkbox>
       </el-checkbox-group>
+    </section>
+    <section class="warm-header">
       <el-button type="primary" :disabled="!roleId" :loading="submitLoading" @click="onSave">保存范围</el-button>
-    </el-space>
+    </section>
   </div>
 </template>
 

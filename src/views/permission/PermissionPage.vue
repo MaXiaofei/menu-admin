@@ -1,14 +1,20 @@
 <template>
-  <div v-loading="loading">
-    <el-space direction="vertical" fill style="width: 100%">
-      <el-page-header content="权限配置" />
-      <el-form inline>
+  <div class="warm-page" v-loading="loading">
+    <section class="warm-header">
+      <h2>权限配置</h2>
+      <p class="warm-subtitle">按角色配置 API 权限点，符合 A1 越权拒绝策略</p>
+    </section>
+    <section class="warm-header">
+      <el-form inline class="warm-filter">
         <el-form-item label="角色">
           <el-select v-model="roleId" style="width: 220px" placeholder="请选择角色">
             <el-option v-for="role in roles" :key="role.id" :label="role.name" :value="role.id" />
           </el-select>
         </el-form-item>
+        <el-button type="primary" :disabled="!roleId" :loading="submitLoading" @click="onBind">保存授权</el-button>
       </el-form>
+    </section>
+    <section class="warm-header">
       <el-transfer
         v-model="selectedPermissionIds"
         :data="transferData"
@@ -16,8 +22,7 @@
         filter-placeholder="搜索权限"
         :titles="['可选权限', '已选权限']"
       />
-      <el-button type="primary" :disabled="!roleId" :loading="submitLoading" @click="onBind">保存授权</el-button>
-    </el-space>
+    </section>
   </div>
 </template>
 

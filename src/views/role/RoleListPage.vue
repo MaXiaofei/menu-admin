@@ -1,14 +1,31 @@
 <template>
-  <div>
-    <el-space direction="vertical" fill style="width: 100%">
-      <el-page-header content="角色管理" />
-      <el-button type="primary" @click="openCreate">新增角色</el-button>
+  <div class="warm-page">
+    <section class="warm-header">
+      <h2>角色管理</h2>
+      <p class="warm-subtitle">角色创建、备注维护与权限入口</p>
+    </section>
+    <section class="warm-header">
+      <div class="warm-filter">
+        <el-input placeholder="筛选角色名" style="max-width: 240px" />
+        <el-button>查询</el-button>
+        <el-button type="primary" @click="openCreate">新增角色</el-button>
+      </div>
+    </section>
+    <section class="warm-table-wrap">
       <el-table v-loading="loading" :data="rows" border empty-text="暂无角色数据">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="角色名" />
         <el-table-column prop="remark" label="备注" />
+        <el-table-column label="操作" width="220">
+          <template #default>
+            <el-space>
+              <el-button link type="primary">编辑</el-button>
+              <el-button link type="warning">配置权限</el-button>
+            </el-space>
+          </template>
+        </el-table-column>
       </el-table>
-    </el-space>
+    </section>
 
     <el-dialog v-model="showDialog" title="新增角色" width="460px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
