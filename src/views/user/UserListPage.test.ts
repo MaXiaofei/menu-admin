@@ -29,6 +29,7 @@ describe('user list page', () => {
           'el-option': true,
           'el-table': true,
           'el-table-column': true,
+          'el-pagination': true,
           'el-tag': true,
           'el-dialog': true,
           'el-form': true,

@@ -6,19 +6,19 @@
     </section>
     <section class="warm-header">
       <div class="warm-filter">
-        <el-input placeholder="筛选账号" style="max-width: 180px" />
-        <el-input placeholder="筛选昵称" style="max-width: 180px" />
-        <el-select placeholder="状态" style="width: 140px">
-          <el-option label="全部" value="" />
+        <el-input v-model="query.username" placeholder="筛选账号" style="max-width: 180px" clearable />
+        <el-input v-model="query.nickname" placeholder="筛选昵称" style="max-width: 180px" clearable />
+        <el-select v-model="query.status" placeholder="状态" style="width: 140px" clearable>
+          <el-option label="全部" :value="undefined" />
           <el-option label="启用" :value="1" />
           <el-option label="停用" :value="0" />
         </el-select>
-        <el-button>重置</el-button>
+        <el-button @click="resetQuery">重置</el-button>
         <el-button type="primary" @click="openCreate">新增账号</el-button>
       </div>
     </section>
     <section class="warm-table-wrap">
-      <el-table v-loading="loading" :data="rows" border empty-text="暂无账号数据">
+      <el-table v-loading="loading" :data="pagedRows" border empty-text="暂无账号数据">
         <el-table-column prop="username" label="账号" />
         <el-table-column prop="nickname" label="昵称" />
         <el-table-column prop="phone" label="手机号" />
@@ -42,6 +42,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="warm-pagination">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          layout="total, prev, pager, next, sizes"
+          :total="filteredRows.length"
+          :page-sizes="[5, 10, 20, 50]"
+        />
+      </div>
     </section>
 
     <el-dialog v-model="showDialog" :title="editingUserId ? '编辑账号' : '新增账号'" width="520px">
@@ -65,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import {
@@ -77,6 +86,13 @@ import {
 } from '../../api/admin-user'
 
 const rows = ref<AdminUser[]>([])
+const currentPage = ref(1)
+const pageSize = ref(10)
+const query = ref({
+  username: '',
+  nickname: '',
+  status: undefined as number | undefined,
+})
 const loading = ref(false)
 const submitLoading = ref(false)
 const showDialog = ref(false)
@@ -95,6 +111,31 @@ const rules: FormRules<typeof form.value> = {
   password: [{ required: true, message: '密码不能为空', trigger: 'blur' }],
   phone: [{ pattern: /^1\d{10}$/, message: '手机号格式不正确', trigger: 'blur' }],
   email: [{ type: 'email', message: '邮箱格式不正确', trigger: 'blur' }],
+}
+
+const filteredRows = computed(() => {
+  const usernameKeyword = query.value.username.trim().toLowerCase()
+  const nicknameKeyword = query.value.nickname.trim().toLowerCase()
+  return rows.value.filter((row) => {
+    const usernameMatch = !usernameKeyword || row.username.toLowerCase().includes(usernameKeyword)
+    const nicknameMatch = !nicknameKeyword || (row.nickname ?? '').toLowerCase().includes(nicknameKeyword)
+    const statusMatch = query.value.status === undefined || row.status === query.value.status
+    return usernameMatch && nicknameMatch && statusMatch
+  })
+})
+
+const pagedRows = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredRows.value.slice(start, start + pageSize.value)
+})
+
+function resetQuery() {
+  query.value = {
+    username: '',
+    nickname: '',
+    status: undefined,
+  }
+  currentPage.value = 1
 }
 
 function openCreate() {

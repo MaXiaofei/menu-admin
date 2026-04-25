@@ -27,6 +27,10 @@ export async function createAdminRole(req: AdminRoleCreateReq): Promise<number> 
   return data.data.id
 }
 
+export async function updateAdminRole(id: number, req: AdminRoleCreateReq): Promise<void> {
+  await http.put(`/api/admin/roles/${id}`, req)
+}
+
 export async function bindRolePermissions(roleId: number, permissionIds: number[]): Promise<void> {
   await http.put(`/api/admin/roles/${roleId}/permissions`, { permissionIds })
 }
