@@ -2,12 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import AdminLayout from '../layouts/AdminLayout.vue'
 import DishListPage from '../views/dish/DishListPage.vue'
+import TemplateListPage from '../views/menu-template/TemplateListPage.vue'
 import IngredientListPage from '../views/ingredient/IngredientListPage.vue'
 import LoginPage from '../views/login/LoginPage.vue'
 import PermissionPage from '../views/permission/PermissionPage.vue'
 import RoleListPage from '../views/role/RoleListPage.vue'
 import ScopePage from '../views/scope/ScopePage.vue'
 import UserListPage from '../views/user/UserListPage.vue'
+import DropdownOptionListPage from '../views/config/DropdownOptionListPage.vue'
 import { canAccessRoute } from '../utils/permission'
 
 const router = createRouter({
@@ -34,6 +36,16 @@ const router = createRouter({
           path: 'ingredients',
           component: IngredientListPage,
           meta: { permission: 'ingredient:list', clientType: 'admin' },
+        },
+        {
+          path: 'menu-templates',
+          component: TemplateListPage,
+          meta: { permission: 'menu-template:list', clientType: 'admin' },
+        },
+        {
+          path: 'dropdown-options',
+          component: DropdownOptionListPage,
+          meta: { permission: 'dropdown-option:list', clientType: 'admin' },
         },
         {
           path: 'users',

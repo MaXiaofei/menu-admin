@@ -5,6 +5,8 @@
     <ul style="list-style: none; padding: 0; margin: 0 0 12px 0">
       <li><RouterLink class="nav-link" to="/dishes">菜品管理</RouterLink></li>
       <li><RouterLink class="nav-link" to="/ingredients">食材管理</RouterLink></li>
+      <li><RouterLink class="nav-link" to="/menu-templates">菜单模板</RouterLink></li>
+      <li><RouterLink class="nav-link" to="/dropdown-options">下拉配置</RouterLink></li>
     </ul>
 
     <h3 style="margin: 0 0 8px 0; color: #7c2d12">权限</h3>

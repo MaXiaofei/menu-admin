@@ -2,7 +2,7 @@
   <div class="warm-page">
     <section class="warm-header">
       <h2>菜品管理</h2>
-      <p class="warm-subtitle">A 版业务优先：支持新增、列表浏览与状态管理</p>
+      <p class="warm-subtitle">Batch2：基础字段、封面/步骤/笔记、食材关联</p>
     </section>
     <section class="warm-header">
       <div class="warm-filter">
@@ -41,9 +41,12 @@
       </div>
     </section>
 
-    <el-dialog v-model="showDialog" :title="editingId ? '编辑菜品' : '新增菜品'" width="520px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
+    <el-dialog v-model="showDialog" :title="editingId ? '编辑菜品' : '新增菜品'" width="640px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="菜名" prop="name"><el-input v-model="form.name" /></el-form-item>
+        <el-form-item label="封面URL"><el-input v-model="form.coverUrl" placeholder="https://..." /></el-form-item>
+        <el-form-item label="步骤"><el-input v-model="form.steps" type="textarea" rows="3" /></el-form-item>
+        <el-form-item label="笔记"><el-input v-model="form.notes" type="textarea" rows="2" /></el-form-item>
         <el-form-item label="时长" prop="durationMin">
           <el-input-number v-model="form.durationMin" :min="1" :max="999" />
         </el-form-item>
@@ -57,6 +60,28 @@
           </el-select>
         </el-form-item>
         <el-form-item label="备注"><el-input v-model="form.remark" /></el-form-item>
+        <template v-if="editingId">
+          <el-divider>食材关联（全量保存）</el-divider>
+          <div style="margin-bottom: 8px">
+            <el-button size="small" @click="addIngredientRow">添加一行</el-button>
+          </div>
+          <el-table :data="ingredientRows" border size="small" empty-text="可添加食材行">
+            <el-table-column label="食材ID" width="120">
+              <template #default="{ row }"><el-input-number v-model="row.ingredientId" :min="1" controls-position="right" /></template>
+            </el-table-column>
+            <el-table-column label="用量(g)" width="120">
+              <template #default="{ row }"><el-input-number v-model="row.amountG" :min="0" :step="1" controls-position="right" /></template>
+            </el-table-column>
+            <el-table-column label="排序" width="100">
+              <template #default="{ row }"><el-input-number v-model="row.sortOrder" :min="0" controls-position="right" /></template>
+            </el-table-column>
+            <el-table-column label="操作" width="80">
+              <template #default="{ $index }">
+                <el-button link type="danger" @click="removeIngredientRow($index)">删</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </template>
       </el-form>
       <template #footer>
         <el-button @click="showDialog = false">取消</el-button>
@@ -70,7 +95,16 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { createDish, listDishes, updateDish, type Dish } from '../../api/dish'
+import {
+  createDish,
+  getDishDetail,
+  listDishIngredients,
+  listDishes,
+  replaceDishIngredients,
+  updateDish,
+  type Dish,
+  type DishIngredientRow,
+} from '../../api/dish'
 
 const rows = ref<Dish[]>([])
 const showDialog = ref(false)
@@ -84,11 +118,15 @@ const query = ref({
 })
 const form = ref({
   name: '',
+  coverUrl: '',
+  steps: '',
+  notes: '',
   durationMin: 10,
   difficulty: 2,
   status: 1,
   remark: '',
 })
+const ingredientRows = ref<DishIngredientRow[]>([])
 const formRef = ref<FormInstance>()
 const rules: FormRules<typeof form.value> = {
   name: [{ required: true, message: '菜名不能为空', trigger: 'blur' }],
@@ -126,8 +164,12 @@ function resetQuery() {
 
 function openCreate() {
   editingId.value = null
+  ingredientRows.value = []
   form.value = {
     name: '',
+    coverUrl: '',
+    steps: '',
+    notes: '',
     durationMin: 10,
     difficulty: 2,
     status: 1,
@@ -137,28 +179,69 @@ function openCreate() {
   showDialog.value = true
 }
 
-function openEdit(row: Dish) {
+async function openEdit(row: Dish) {
   editingId.value = row.id
-  form.value = {
-    name: row.name,
-    durationMin: row.durationMin,
-    difficulty: row.difficulty,
-    status: row.status,
-    remark: row.remark ?? '',
+  try {
+    const d = await getDishDetail(row.id)
+    form.value = {
+      name: d.name,
+      coverUrl: d.coverUrl ?? '',
+      steps: d.steps ?? '',
+      notes: d.notes ?? '',
+      durationMin: d.durationMin,
+      difficulty: d.difficulty,
+      status: d.status,
+      remark: d.remark ?? '',
+    }
+    const ing = await listDishIngredients(row.id)
+    ingredientRows.value = ing.map((x) => ({
+      ingredientId: x.ingredientId,
+      amountG: Number(x.amountG),
+      sortOrder: x.sortOrder,
+    }))
+    formRef.value?.clearValidate()
+    showDialog.value = true
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加载详情失败')
   }
-  formRef.value?.clearValidate()
-  showDialog.value = true
+}
+
+function addIngredientRow() {
+  ingredientRows.value.push({
+    ingredientId: 1,
+    amountG: 0,
+    sortOrder: ingredientRows.value.length,
+  })
+}
+
+function removeIngredientRow(index: number) {
+  ingredientRows.value.splice(index, 1)
 }
 
 async function submitForm() {
   const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) {
-    return
-  }
+  if (!valid) return
   submitLoading.value = true
   try {
     if (editingId.value) {
-      await updateDish(editingId.value, form.value)
+      await updateDish(editingId.value, {
+        name: form.value.name,
+        coverUrl: form.value.coverUrl || undefined,
+        steps: form.value.steps || undefined,
+        notes: form.value.notes || undefined,
+        durationMin: form.value.durationMin,
+        difficulty: form.value.difficulty,
+        status: form.value.status,
+        remark: form.value.remark || undefined,
+      })
+      const items = ingredientRows.value
+        .filter((r) => r.ingredientId > 0)
+        .map((r, i) => ({
+          ingredientId: r.ingredientId,
+          amountG: r.amountG,
+          sortOrder: r.sortOrder ?? i,
+        }))
+      await replaceDishIngredients(editingId.value, { items })
       ElMessage.success('编辑菜品成功')
     } else {
       await createDish({
@@ -180,4 +263,3 @@ async function submitForm() {
 
 onMounted(loadRows)
 </script>
-
