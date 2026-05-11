@@ -1,8 +1,8 @@
 <template>
   <div class="warm-page">
     <section class="warm-header">
-      <h2>下拉配置</h2>
-      <p class="warm-subtitle">维护类型、状态、菜系等下拉项：分类 + 隐式值(optionCode) + 展示文案(optionLabel)</p>
+      <h2>字典配置</h2>
+      <p class="warm-subtitle">维护类型、状态、菜系等字典项</p>
     </section>
     <section class="warm-header">
       <div class="warm-filter">
@@ -47,7 +47,7 @@
       </div>
     </section>
 
-    <el-dialog v-model="showDialog" :title="editingId ? '编辑下拉项' : '新增下拉项'" width="560px">
+    <el-dialog v-model="showDialog" :title="editingId ? '编辑字典项' : '新增字典项'" width="560px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
         <el-form-item label="分类编码" prop="category">
           <el-input v-model="form.category" placeholder="如 MENU_TEMPLATE_TYPE、DISH_STATUS、CUISINE" />
@@ -56,7 +56,7 @@
           <el-input v-model="form.optionCode" placeholder="与业务存储一致，如 1 或 chuancai" />
         </el-form-item>
         <el-form-item label="展示文案" prop="optionLabel">
-          <el-input v-model="form.optionLabel" placeholder="下拉显示给用户" />
+          <el-input v-model="form.optionLabel" placeholder="展示给用户" />
         </el-form-item>
         <el-form-item label="排序" prop="sortOrder">
           <el-input-number v-model="form.sortOrder" :min="0" :max="9999" />

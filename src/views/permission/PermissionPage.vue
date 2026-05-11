@@ -2,7 +2,7 @@
   <div class="warm-page" v-loading="loading">
     <section class="warm-header">
       <h2>权限配置</h2>
-      <p class="warm-subtitle">按角色配置 API 权限点，符合 A1 越权拒绝策略</p>
+      <p class="warm-subtitle">按角色配置 API 权限点</p>
     </section>
     <section class="warm-header">
       <el-form inline class="warm-filter">

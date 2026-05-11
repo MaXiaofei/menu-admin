@@ -2,7 +2,6 @@
   <div class="warm-page">
     <section class="warm-header">
       <h2>菜单模板</h2>
-      <p class="warm-subtitle">Batch2：列表筛选、分页、新建/编辑、食材汇总</p>
     </section>
     <section class="warm-header">
       <div class="warm-filter">

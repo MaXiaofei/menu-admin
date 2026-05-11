@@ -2,7 +2,6 @@
   <div class="login-shell">
     <section class="warm-header">
       <h2>烟火小食单管理后台</h2>
-      <p class="warm-subtitle">Batch1 管理端登录（A 版业务优先）</p>
     </section>
     <form class="login-form warm-header" @submit.prevent="onSubmit">
       <input v-model="form.username" class="login-input" placeholder="账号" />

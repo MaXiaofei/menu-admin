@@ -2,7 +2,6 @@
   <div class="warm-page">
     <section class="warm-header">
       <h2>菜品管理</h2>
-      <p class="warm-subtitle">Batch2：基础字段、封面/步骤/笔记、食材关联</p>
     </section>
     <section class="warm-header">
       <div class="warm-filter">
